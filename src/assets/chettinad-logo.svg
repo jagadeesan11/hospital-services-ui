@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="120" version="1.1" viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg">
+ <g fill="#1976d2">
+  <path d="m50 20h300v80h-300z" fill="#fff"/>
+  <text x="70" y="75" font-family="Arial" font-size="40" font-weight="bold">CHETTINAD</text>
+  <text x="120" y="95" font-family="Arial" font-size="18">HOSPITAL</text>
+ </g>
+</svg>
+
