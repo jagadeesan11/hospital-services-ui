@@ -3,6 +3,7 @@ import { patientApi } from './api';
 export interface MedicalRecord {
   id?: number;
   patientId?: number;
+  doctorId?: number;
   patient?: {
     id: number;
     firstName: string;
@@ -38,8 +39,16 @@ export interface MedicalRecord {
 export const medicalRecordService = {
   getMedicalRecordsByPatient: (patientId: number) => patientApi.get(`/api/medical-records/patient/${patientId}`),
   getMedicalRecord: (id: number) => patientApi.get(`/api/medical-records/${id}`),
-  createMedicalRecord: (patientId: number, record: Omit<MedicalRecord, 'id'>) =>
-    patientApi.post(`/api/medical-records`, record),
+  createMedicalRecord: (patientId: number, doctorId: number, record: Omit<MedicalRecord, 'id'>) => {
+    console.log('🏥 Creating medical record with:', { patientId, doctorId, record });
+    const payload = {
+      ...record,
+      doctorId: doctorId,
+      patientId: patientId
+    };
+    console.log('📤 Final payload:', payload);
+    return patientApi.post(`/api/medical-records`, payload);
+  },
   updateMedicalRecord: (id: number, record: MedicalRecord) =>
     patientApi.put(`/api/medical-records/${id}`, record),
   deleteMedicalRecord: (id: number) => patientApi.delete(`/api/medical-records/${id}`),

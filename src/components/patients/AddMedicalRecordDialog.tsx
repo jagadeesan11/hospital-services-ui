@@ -82,7 +82,7 @@ const AddMedicalRecordDialog: React.FC<AddMedicalRecordDialogProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await medicalRecordService.createMedicalRecord(patientId, formData);
+      await medicalRecordService.createMedicalRecord(patientId, formData.treatingDoctor.id, formData);
       onSuccess();
     } catch (error) {
       onError(error);
