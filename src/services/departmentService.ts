@@ -1,4 +1,4 @@
-import { api } from './api';
+import { hospitalApi } from './api';
 
 export interface Department {
   id?: number;
@@ -13,17 +13,11 @@ export interface CreateDepartmentRequest {
 }
 
 export const departmentService = {
-  getAllDepartments: (hospital_id: number) => api.get(`/api/hospitals/${hospital_id}/departments`),
-  getDepartment: (id: number) => api.get(`/api/departments/${id}`),
-  createDepartment: async ({ department, hospital_id }: CreateDepartmentRequest) => {
-    try {
-      return api.post(`/api/hospitals/${hospital_id}/blocks/${department.block_id}/departments`, department);
-    } catch (error) {
-      console.error('Error in createDepartment:', error);
-      throw error;
-    }
-  },
-  updateDepartment: (id: number, department: Department) => api.put(`/api/departments/${id}`, department),
-  deleteDepartment: (id: number) => api.delete(`/api/departments/${id}`),
-  getDepartmentsByBlock: (block_id: number) => api.get(`/api/blocks/${block_id}/departments`),
+  getAllDepartments: () => hospitalApi.get('/api/departments'),
+  getDepartment: (id: number) => hospitalApi.get(`/api/departments/${id}`),
+  getDepartmentsByHospital: (hospitalId: number) => hospitalApi.get(`/api/hospitals/${hospitalId}/departments`),
+  getDepartmentsByBlock: (blockId: number) => hospitalApi.get(`/api/blocks/${blockId}/departments`),
+  createDepartment: (department: CreateDepartmentRequest) => hospitalApi.post('/api/departments', department),
+  updateDepartment: (id: number, department: Department) => hospitalApi.put(`/api/departments/${id}`, department),
+  deleteDepartment: (id: number) => hospitalApi.delete(`/api/departments/${id}`),
 };

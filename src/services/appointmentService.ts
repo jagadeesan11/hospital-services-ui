@@ -1,4 +1,4 @@
-import { api } from './api';
+import { appointmentApi } from './api';
 import { Doctor } from './doctorService';
 import { Patient } from './patientService';
 
@@ -15,14 +15,11 @@ export interface Appointment {
 }
 
 export const appointmentService = {
-  getAllAppointments: () => api.get('/api/appointments'),
-  getAppointmentsByDoctor: (doctorId: number) => api.get(`/api/appointments/doctor/${doctorId}`),
-  getAppointment: (id: number) => api.get(`/api/appointments/${id}`),
-  createAppointment: (appointment: Appointment) => api.post(`/api/appointments/doctor/${appointment.doctor.id}/patient`, appointment),
-  updateAppointment: (id: number, appointment: Appointment) => api.patch(`/api/appointments/${id}/status`, appointment),
-  deleteAppointment: (id: number) => api.delete(`/api/appointments/${id}`),
-  getAppointmentsByDepartment: (departmentId: number) => api.get(`/api/departments/${departmentId}/appointments`),
-  rescheduleAppointment: (id: number, newDateTime: string) => api.put(`/api/appointments/${id}/reschedule`, {
-    newAppointmentTime: newDateTime
-  }),
+  getAllAppointments: () => appointmentApi.get('/api/appointments'),
+  getAppointmentsByDoctor: (doctorId: number) => appointmentApi.get(`/api/appointments/doctor/${doctorId}`),
+  getAppointment: (id: number) => appointmentApi.get(`/api/appointments/${id}`),
+  createAppointment: (appointment: Appointment) => appointmentApi.post(`/api/appointments/doctor/${appointment.doctor.id}/patient`, appointment),
+  updateAppointment: (id: number, appointment: Appointment) => appointmentApi.patch(`/api/appointments/${id}/status`, appointment),
+  deleteAppointment: (id: number) => appointmentApi.delete(`/api/appointments/${id}`),
+  rescheduleAppointment: (id: number, newAppointmentTime: string) => appointmentApi.put(`/api/appointments/${id}/reschedule`, { newAppointmentTime }),
 };

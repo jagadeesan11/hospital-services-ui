@@ -102,7 +102,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
 
   const loadDepartments = async (hospitalId: number) => {
     try {
-      const response = await departmentService.getAllDepartments(hospitalId);
+      const response = await departmentService.getDepartmentsByHospital(hospitalId);
       setDepartments(response.data);
     } catch (err) {
       console.error('Error loading departments:', err);
@@ -112,7 +112,7 @@ const AddAppointmentDialog: React.FC<AddAppointmentDialogProps> = ({
 
   const loadDoctors = async (hospitalId: number) => {
     try {
-      const response = await doctorService.getAllDoctors(hospitalId);
+      const response = await doctorService.getAllDoctors();
       const filteredDoctors = response.data.filter(
         (doctor: Doctor) => doctor.department?.id === formData.doctor?.department?.id
       );

@@ -59,9 +59,9 @@ const EditMedicalRecordDialog: React.FC<EditMedicalRecordDialogProps> = ({
     }
   };
 
-  const loadDoctors = async (hospitalId: number) => {
+  const loadDoctors = async () => {
     try {
-      const response = await doctorService.getAllDoctors(hospitalId);
+      const response = await doctorService.getAllDoctors();
       setDoctors(response.data);
     } catch (error) {
       console.error('Error loading doctors:', error);
@@ -73,7 +73,7 @@ const EditMedicalRecordDialog: React.FC<EditMedicalRecordDialogProps> = ({
     const hospitalId = event.target.value as number;
     setSelectedHospital(hospitalId);
     if (hospitalId > 0) {
-      loadDoctors(hospitalId);
+      loadDoctors();
     } else {
       setDoctors([]);
     }

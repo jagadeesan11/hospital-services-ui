@@ -67,7 +67,8 @@ const ViewMedicalRecordsDialog: React.FC<ViewMedicalRecordsDialogProps> = ({
     try {
       // Load doctors for the patient's hospital
       if (patient.hospitalId) {
-        const response = await doctorService.getAllDoctors(patient.hospitalId);
+        const response = await doctorService.getAllDoctors();
+        // Filter doctors by hospital if needed, or use all doctors
         setDoctors(response.data);
       }
     } catch (error) {

@@ -58,7 +58,7 @@ const AddDoctorDialog: React.FC<AddDoctorDialogProps> = ({
 
   const loadDepartments = async (hospitalId: number) => {
     try {
-      const response = await departmentService.getAllDepartments(hospitalId);
+      const response = await departmentService.getDepartmentsByHospital(hospitalId);
       setDepartments(response.data);
     } catch (err) {
       console.error('Error loading departments:', err);
@@ -142,7 +142,16 @@ const AddDoctorDialog: React.FC<AddDoctorDialogProps> = ({
     setError('');
 
     try {
-      await doctorService.createDoctor(formData);
+      // Convert formData to CreateDoctorRequest format
+      const createDoctorData = {
+        name: formData.name,
+        email: formData.email,
+        specialization: formData.specialization,
+        hospitalId: formData.hospitalId!,
+        departmentId: formData.departmentId!
+      };
+
+      await doctorService.createDoctor(createDoctorData);
       onSuccess();
       setFormData({
         name: '',

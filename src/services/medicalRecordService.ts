@@ -1,4 +1,4 @@
-import { api } from './api';
+import { patientApi } from './api';
 
 export interface MedicalRecord {
   id?: number;
@@ -36,11 +36,11 @@ export interface MedicalRecord {
 }
 
 export const medicalRecordService = {
-  getMedicalRecordsByPatient: (patientId: number) => api.get(`/api/medical-records/patient/${patientId}`),
-  getMedicalRecord: (id: number) => api.get(`/api/medical-records/${id}`),
+  getMedicalRecordsByPatient: (patientId: number) => patientApi.get(`/api/medical-records/patient/${patientId}`),
+  getMedicalRecord: (id: number) => patientApi.get(`/api/medical-records/${id}`),
   createMedicalRecord: (patientId: number, record: Omit<MedicalRecord, 'id'>) =>
-    api.post(`/api/medical-records`, record),
+    patientApi.post(`/api/medical-records`, record),
   updateMedicalRecord: (id: number, record: MedicalRecord) =>
-    api.put(`/api/medical-records/${id}`, record),
-  deleteMedicalRecord: (id: number) => api.delete(`/api/medical-records/${id}`),
+    patientApi.put(`/api/medical-records/${id}`, record),
+  deleteMedicalRecord: (id: number) => patientApi.delete(`/api/medical-records/${id}`),
 };

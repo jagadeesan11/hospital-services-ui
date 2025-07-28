@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import {
   AppBar,
   Toolbar,
@@ -8,27 +8,119 @@ import {
   Box,
   Menu,
   MenuItem,
-  ListItemIcon
+  ListItemIcon,
+  Typography,
+  Avatar,
+  Divider
 } from '@mui/material';
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
-import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
-import ViewModuleIcon from '@mui/icons-material/ViewModule';
-import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
-import PersonIcon from '@mui/icons-material/Person';
-import GroupIcon from '@mui/icons-material/Group';
+import {
+  AdminPanelSettings as AdminPanelSettingsIcon,
+  LocalHospital as LocalHospitalIcon,
+  ViewModule as ViewModuleIcon,
+  MedicalServices as MedicalServicesIcon,
+  Person as PersonIcon,
+  Group as GroupIcon,
+  Logout as LogoutIcon,
+  Dashboard as DashboardIcon
+} from '@mui/icons-material';
+import Home from './components/home/Home';
+import Dashboard from './components/auth/Dashboard';
+import LoginForm from './components/auth/LoginForm';
 import HospitalList from './components/hospitals/HospitalList';
 import BlockList from './components/blocks/BlockList';
 import DepartmentList from './components/departments/DepartmentList';
-import AppointmentList from './components/appointments/AppointmentList';
 import DoctorList from './components/doctors/DoctorList';
-import Home from './components/home/Home';
 import PatientList from './components/patients/PatientList';
+import AppointmentList from './components/appointments/AppointmentList';
+import ApiDebugger from './components/debug/ApiDebugger';
+import NavigationDebugger from './components/debug/NavigationDebugger';
+import { authService, UserResponse } from './services/authService';
 import chettinadLogo from './assets/chettinad-logo.svg';
 import './App.css';
 
-function App() {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+// Protected Route Component
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  requiredRoles?: string[];
+  user: UserResponse | null;
+}
 
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRoles, user }) => {
+  const normalizedRole = user ? authService.normalizeUserRole(user.role) : 'none';
+
+  console.log('🛡️ ProtectedRoute check:', {
+    userExists: !!user,
+    userRole: user?.role || 'none',
+    normalizedRole: normalizedRole,
+    requiredRoles: requiredRoles || 'none',
+    hasRequiredRole: requiredRoles ? requiredRoles.includes(normalizedRole) : 'no role check',
+    willRenderChildren: !!user && (!requiredRoles || requiredRoles.includes(normalizedRole))
+  });
+
+  if (!user) {
+    console.log('🚫 ProtectedRoute: No user - redirecting to login');
+    return <Navigate to="/login" replace />;
+  }
+
+  if (requiredRoles && !requiredRoles.includes(normalizedRole)) {
+    console.log('🚫 ProtectedRoute: Insufficient role - redirecting to dashboard');
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  console.log('✅ ProtectedRoute: Access granted - rendering children');
+  return <>{children}</>;
+};
+
+function App() {
+  const [user, setUser] = useState<UserResponse | null>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Check if user is already authenticated on app load
+    const storedUser = authService.getStoredUser();
+    if (storedUser && authService.isAuthenticated()) {
+      setUser(storedUser);
+    }
+    setIsLoading(false);
+  }, []);
+
+  const handleLoginSuccess = (userData: UserResponse) => {
+    setUser(userData);
+  };
+
+  const handleLogout = () => {
+    authService.logout();
+    setUser(null);
+    setAnchorEl(null);
+  };
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+  };
+
+  // Helper function to check roles
+  const hasRole = (user: UserResponse | null, roles: string[]): boolean => {
+    if (!user) return false;
+    const normalizedRole = authService.normalizeUserRole(user.role);
+    return roles.includes(normalizedRole);
+  };
+
+  // If not authenticated, show login form
+  if (!user) {
+    return (
+      <Router>
+        <Routes>
+          <Route path="/login" element={<LoginForm onLoginSuccess={handleLoginSuccess} />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </Router>
+    );
+  }
+
+  const normalizedRole = authService.normalizeUserRole(user.role);
+
+  // Authenticated user interface
   return (
     <Router>
       <AppBar position="static">
@@ -42,69 +134,192 @@ function App() {
               />
             </Box>
           </Link>
+
           <Box sx={{ flexGrow: 1, display: 'flex', gap: 2, alignItems: 'center' }}>
             <Button
               color="inherit"
-              onClick={(e) => setAnchorEl(e.currentTarget)}
-              startIcon={<AdminPanelSettingsIcon />}
+              component={Link}
+              to="/"
+              startIcon={<DashboardIcon />}
             >
-              Administrator
+              Home
             </Button>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={() => setAnchorEl(null)}
+
+            <Button
+              color="inherit"
+              component={Link}
+              to="/dashboard"
+              startIcon={<DashboardIcon />}
             >
-              <MenuItem component={Link} to="/hospitals" onClick={() => setAnchorEl(null)}>
+              Dashboard
+            </Button>
+
+            {(normalizedRole === 'ADMIN' || normalizedRole === 'MANAGER') && (
+              <Button
+                color="inherit"
+                onClick={(e) => setAnchorEl(e.currentTarget)}
+                startIcon={<AdminPanelSettingsIcon />}
+              >
+                Management
+              </Button>
+            )}
+
+            {(normalizedRole === 'ADMIN' || normalizedRole === 'USER') && (
+              <>
+                <Button
+                  color="inherit"
+                  component={Link}
+                  to="/patients"
+                  startIcon={<PersonIcon />}
+                >
+                  Patients
+                </Button>
+                <Button
+                  color="inherit"
+                  component={Link}
+                  to="/appointments"
+                  startIcon={<MedicalServicesIcon />}
+                >
+                  Appointments
+                </Button>
+              </>
+            )}
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Avatar sx={{ bgcolor: 'secondary.main', width: 32, height: 32 }}>
+              {user.name.charAt(0).toUpperCase()}
+            </Avatar>
+            <Typography variant="body2" sx={{ mr: 1 }}>
+              {user.name} ({normalizedRole})
+            </Typography>
+            <Button
+              color="inherit"
+              onClick={handleLogout}
+              startIcon={<LogoutIcon />}
+            >
+              Logout
+            </Button>
+          </Box>
+
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleCloseMenu}
+          >
+            {normalizedRole === 'ADMIN' && (
+              [
+                <MenuItem key="hospitals" onClick={handleCloseMenu} component={Link} to="/hospitals">
+                  <ListItemIcon>
+                    <LocalHospitalIcon />
+                  </ListItemIcon>
+                  Hospitals
+                </MenuItem>,
+                <MenuItem key="blocks" onClick={handleCloseMenu} component={Link} to="/blocks">
+                  <ListItemIcon>
+                    <ViewModuleIcon />
+                  </ListItemIcon>
+                  Blocks
+                </MenuItem>,
+                <MenuItem key="departments" onClick={handleCloseMenu} component={Link} to="/departments">
+                  <ListItemIcon>
+                    <MedicalServicesIcon />
+                  </ListItemIcon>
+                  Departments
+                </MenuItem>,
+                <Divider key="divider" />,
+                <MenuItem key="doctors" onClick={handleCloseMenu} component={Link} to="/doctors">
+                  <ListItemIcon>
+                    <GroupIcon />
+                  </ListItemIcon>
+                  Doctors
+                </MenuItem>
+              ]
+            )}
+            {normalizedRole === 'MANAGER' && (
+              <MenuItem onClick={handleCloseMenu} component={Link} to="/doctors">
                 <ListItemIcon>
-                  <LocalHospitalIcon fontSize="small" />
-                </ListItemIcon>
-                Hospitals
-              </MenuItem>
-              <MenuItem component={Link} to="/blocks" onClick={() => setAnchorEl(null)}>
-                <ListItemIcon>
-                  <ViewModuleIcon fontSize="small" />
-                </ListItemIcon>
-                Blocks
-              </MenuItem>
-              <MenuItem component={Link} to="/departments" onClick={() => setAnchorEl(null)}>
-                <ListItemIcon>
-                  <MedicalServicesIcon fontSize="small" />
-                </ListItemIcon>
-                Departments
-              </MenuItem>
-              <MenuItem component={Link} to="/doctors" onClick={() => setAnchorEl(null)}>
-                <ListItemIcon>
-                  <PersonIcon fontSize="small" />
+                  <GroupIcon />
                 </ListItemIcon>
                 Doctors
               </MenuItem>
-              <MenuItem component={Link} to="/patients" onClick={() => setAnchorEl(null)}>
-                <ListItemIcon>
-                  <GroupIcon fontSize="small" />
-                </ListItemIcon>
-                Patients
-              </MenuItem>
-            </Menu>
-            <Button color="inherit" component={Link} to="/appointments">
-              Appointments
-            </Button>
-          </Box>
+            )}
+          </Menu>
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
-          <Routes>
-            <Route path="/hospitals" element={<HospitalList />} />
-            <Route path="/blocks" element={<BlockList />} />
-            <Route path="/departments" element={<DepartmentList />} />
-            <Route path="/doctors" element={<DoctorList />} />
-            <Route path="/appointments" element={<AppointmentList />} />
-            <Route path="/patients" element={<PatientList />} />
-            <Route path="/" element={<Home />} />
-          </Routes>
-        </Box>
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <NavigationDebugger user={user} />
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute user={user}>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route path="/dashboard" element={<Dashboard user={user} />} />
+
+          <Route path="/debug" element={<ApiDebugger />} />
+
+          <Route
+            path="/hospitals"
+            element={
+              <ProtectedRoute requiredRoles={['ADMIN']} user={user}>
+                <HospitalList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/blocks"
+            element={
+              <ProtectedRoute requiredRoles={['ADMIN']} user={user}>
+                <BlockList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/departments"
+            element={
+              <ProtectedRoute requiredRoles={['ADMIN']} user={user}>
+                <DepartmentList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/doctors"
+            element={
+              <ProtectedRoute requiredRoles={['ADMIN', 'MANAGER']} user={user}>
+                <DoctorList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/patients"
+            element={
+              <ProtectedRoute requiredRoles={['ADMIN', 'USER']} user={user}>
+                <PatientList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/appointments"
+            element={
+              <ProtectedRoute requiredRoles={['ADMIN', 'USER']} user={user}>
+                <AppointmentList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </Container>
     </Router>
   );

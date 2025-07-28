@@ -56,11 +56,11 @@ const DoctorList: React.FC = () => {
       return;
     }
     try {
-      const response = await doctorService.getAllDoctors(Number(selectedHospital));
+      const response = await doctorService.getAllDoctors();
       setDoctors(response.data);
 
       // Also load departments for the selected hospital
-      const deptResponse = await departmentService.getAllDepartments(Number(selectedHospital));
+      const deptResponse = await departmentService.getDepartmentsByHospital(Number(selectedHospital));
       setDepartments(deptResponse.data);
     } catch (error) {
       console.error('Error loading doctors:', error);

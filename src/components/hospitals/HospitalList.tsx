@@ -27,15 +27,19 @@ const HospitalList: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
+    console.log('🏥 HospitalList component mounted - about to call loadHospitals API');
     loadHospitals();
   }, []);
 
   const loadHospitals = async () => {
+    console.log('📡 loadHospitals function called - making API request to /api/hospitals');
     try {
+      console.log('🔄 About to call hospitalService.getAllHospitals()...');
       const response = await hospitalService.getAllHospitals();
+      console.log('✅ API call successful:', response.status, response.data);
       setHospitals(response.data);
     } catch (error) {
-      console.error('Error loading hospitals:', error);
+      console.error('❌ Error loading hospitals:', error);
       setErrorMessage('Failed to load hospitals. Please try again.');
     }
   };

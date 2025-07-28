@@ -1,4 +1,4 @@
-import { api } from './api';
+import { emailApi } from './api';
 
 export interface EmailResponseDTO {
   success: boolean;
@@ -17,7 +17,7 @@ export interface AppointmentConfirmationData {
 
 export const emailService = {
   sendAppointmentConfirmation: (data: AppointmentConfirmationData) =>
-    api.post('/api/emails/send/appointment-confirmation', null, {
+    emailApi.post('/api/emails/send/appointment-confirmation', null, {
       params: {
         patientEmail: data.patientEmail,
         patientName: data.patientName,
@@ -29,12 +29,12 @@ export const emailService = {
     }),
 
   sendSimpleEmail: (to: string, subject: string, text: string) =>
-    api.post('/api/emails/send/simple', null, {
+    emailApi.post('/api/emails/send/simple', null, {
       params: { to, subject, body: text },
     }),
 
   sendHtmlEmail: (to: string, subject: string, html: string) =>
-    api.post('/api/emails/send/html', null, {
+    emailApi.post('/api/emails/send/html', null, {
       params: { to, subject, htmlBody: html },
     }),
 };

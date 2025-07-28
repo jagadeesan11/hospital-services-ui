@@ -75,31 +75,19 @@ const AppointmentList: React.FC = () => {
 
   const loadDepartments = async (hospitalId: number) => {
     try {
-      const response = await departmentService.getAllDepartments(hospitalId);
+      const response = await departmentService.getDepartmentsByHospital(hospitalId);
       setDepartments(response.data);
     } catch (error) {
       console.error('Error loading departments:', error);
-      setDepartments([]);
-      setSnackbar({
-        open: true,
-        message: 'Failed to load departments',
-        severity: 'error'
-      });
     }
   };
 
   const loadDoctors = async (hospitalId: number) => {
     try {
-      const response = await doctorService.getAllDoctors(hospitalId);
+      const response = await doctorService.getAllDoctors();
       setDoctors(response.data || []);
     } catch (error) {
       console.error('Error loading doctors:', error);
-      setDoctors([]);
-      setSnackbar({
-        open: true,
-        message: 'Failed to load doctors',
-        severity: 'error'
-      });
     }
   };
 
@@ -117,7 +105,7 @@ const AppointmentList: React.FC = () => {
       if (hospitalResponse.data.length > 0) {
         const firstHospital = hospitalResponse.data[0];
         await loadDepartments(firstHospital.id);
-        const doctorResponse = await doctorService.getAllDoctors(firstHospital.id);
+        const doctorResponse = await doctorService.getAllDoctors();
         setDoctors(doctorResponse.data || []);
       }
     } catch (error) {

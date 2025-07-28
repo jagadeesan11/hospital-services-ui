@@ -1,4 +1,4 @@
-import { api } from './api';
+import { doctorApi } from './api';
 
 export interface Doctor {
   id?: number;
@@ -17,10 +17,19 @@ export interface Doctor {
   };
 }
 
+export interface CreateDoctorRequest {
+  name: string;
+  email: string;
+  specialization: string;
+  hospitalId: number;
+  departmentId: number;
+}
+
 export const doctorService = {
-  getAllDoctors: (hospitalId: number) => api.get(`/api/hospitals/${hospitalId}/doctors`),
-  getDoctor: (hospitalId: number, id: number) => api.get(`/api/hospitals/${hospitalId}/doctors/${id}`),
-  createDoctor: (doctor: Doctor) => api.post(`/api/hospitals/${doctor.hospitalId}/doctors`, doctor),
-  updateDoctor: (id: number, doctor: Doctor) => api.put(`/api/doctors/${id}`, doctor),
-  deleteDoctor: (id: number) => api.delete(`/api/doctors/${id}`),
+  getAllDoctors: () => doctorApi.get('/api/doctors'),
+  getDoctor: (id: number) => doctorApi.get(`/api/doctors/${id}`),
+  getDoctorsByDepartment: (departmentId: number) => doctorApi.get(`/api/doctors/department/${departmentId}`),
+  createDoctor: (doctor: CreateDoctorRequest) => doctorApi.post('/api/doctors', doctor),
+  updateDoctor: (id: number, doctor: Doctor) => doctorApi.put(`/api/doctors/${id}`, doctor),
+  deleteDoctor: (id: number) => doctorApi.delete(`/api/doctors/${id}`),
 };

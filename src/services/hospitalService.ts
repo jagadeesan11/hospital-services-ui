@@ -1,4 +1,4 @@
-import { api } from './api';
+import { hospitalApi } from './api';
 
 export interface Hospital {
   id: number;
@@ -20,9 +20,9 @@ export interface CreateHospitalRequest {
 }
 
 export const hospitalService = {
-  getAllHospitals: () => api.get('/api/hospitals'),
-  getHospital: (id: number) => api.get(`/api/hospitals/${id}`),
-  createHospital: (hospital: CreateHospitalRequest) => api.post('/api/hospitals', hospital),
-  updateHospital: (id: number, hospital: Hospital) => api.put(`/api/hospitals/${id}`, hospital),
-  deleteHospital: (id: number) => api.delete(`/api/hospitals/${id}`),
+  getAllHospitals: () => hospitalApi.get('/api/hospitals'),
+  getHospital: (id: number) => hospitalApi.get(`/api/hospitals/${id}`),
+  createHospital: (hospital: CreateHospitalRequest) => hospitalApi.post('/api/hospitals', hospital),
+  updateHospital: (id: number, hospital: Hospital) => hospitalApi.put(`/api/hospitals/${id}`, hospital),
+  deleteHospital: (id: number) => hospitalApi.delete(`/api/hospitals/${id}`),
 };

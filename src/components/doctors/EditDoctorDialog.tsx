@@ -60,7 +60,7 @@ const EditDoctorDialog: React.FC<EditDoctorDialogProps> = ({
 
   const loadDepartments = async (hospitalId: number) => {
     try {
-      const response = await departmentService.getAllDepartments(hospitalId);
+      const response = await departmentService.getDepartmentsByHospital(hospitalId);
       setDepartments(response.data);
     } catch (err) {
       console.error('Error loading departments:', err);

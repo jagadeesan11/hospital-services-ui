@@ -65,7 +65,7 @@ const DepartmentList: React.FC = () => {
   const loadDepartments = async () => {
     try {
       if (selectedHospital) {
-        const response = await departmentService.getAllDepartments(selectedHospital as number);
+        const response = await departmentService.getDepartmentsByHospital(selectedHospital as number);
         setDepartments(response.data);
       } else {
         // If no hospital is selected, clear the departments list

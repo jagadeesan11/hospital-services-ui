@@ -1,7 +1,13 @@
-import { api } from './api';
+import { hospitalApi } from './api';
 
 export interface Block {
   id?: number;
+  name: string;
+  floorNumber: number;
+  hospital_id: number;
+}
+
+export interface CreateBlockRequest {
   name: string;
   floorNumber: number;
   hospital_id: number;
@@ -12,10 +18,10 @@ interface GetBlocksParams {
 }
 
 export const blockService = {
-  getAllBlocks: (hospital_id: number, params?: GetBlocksParams) => api.get(`/api/hospitals/${hospital_id}/blocks`, { params }),
-  getBlock: (id: number) => api.get(`/api/blocks/${id}`),
-  createBlock: (block: Block) => api.post(`/api/hospitals/${block.hospital_id}/blocks`, block),
-  updateBlock: (id: number, block: Block) => api.put(`/api/blocks/${id}`, block),
-  deleteBlock: (id: number) => api.delete(`/api/blocks/${id}`),
-  getBlocksByHospital: (hospital_id: number) => api.get(`/api/hospitals/${hospital_id}/blocks`),
+  getAllBlocks: () => hospitalApi.get('/api/blocks'),
+  getBlock: (id: number) => hospitalApi.get(`/api/blocks/${id}`),
+  getBlocksByHospital: (hospitalId: number) => hospitalApi.get(`/api/hospitals/${hospitalId}/blocks`),
+  createBlock: (block: CreateBlockRequest) => hospitalApi.post('/api/blocks', block),
+  updateBlock: (id: number, block: Block) => hospitalApi.put(`/api/blocks/${id}`, block),
+  deleteBlock: (id: number) => hospitalApi.delete(`/api/blocks/${id}`),
 };
