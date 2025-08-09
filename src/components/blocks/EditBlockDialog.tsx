@@ -26,7 +26,6 @@ interface EditBlockDialogProps {
 
 interface EditBlockFormData {
   name: string;
-  floorNumber: number;
   hospital_id: number;
 }
 
@@ -38,7 +37,6 @@ const EditBlockDialog: React.FC<EditBlockDialogProps> = ({
 }) => {
   const [formData, setFormData] = useState<EditBlockFormData>({
     name: '',
-    floorNumber: 0,
     hospital_id: 0
   });
 
@@ -55,7 +53,6 @@ const EditBlockDialog: React.FC<EditBlockDialogProps> = ({
     if (block) {
       setFormData({
         name: block.name || '',
-        floorNumber: block.floorNumber || 0,
         hospital_id: block.hospital_id || 0
       });
     }
@@ -77,10 +74,6 @@ const EditBlockDialog: React.FC<EditBlockDialogProps> = ({
 
     if (!formData.name.trim()) {
       newErrors.name = 'Block name is required';
-    }
-
-    if (formData.floorNumber < 0) {
-      newErrors.floorNumber = 'Floor number must be non-negative';
     }
 
     if (!formData.hospital_id) {
@@ -109,7 +102,7 @@ const EditBlockDialog: React.FC<EditBlockDialogProps> = ({
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'floorNumber' ? Number(value) : value
+      [name]: value
     }));
     if (errors[name]) {
       setErrors(prev => ({
@@ -191,19 +184,6 @@ const EditBlockDialog: React.FC<EditBlockDialogProps> = ({
               error={!!errors.name}
               helperText={errors.name}
               fullWidth
-            />
-
-            <TextField
-              required
-              label="Floor Number"
-              name="floorNumber"
-              type="number"
-              value={formData.floorNumber}
-              onChange={handleTextChange}
-              error={!!errors.floorNumber}
-              helperText={errors.floorNumber}
-              fullWidth
-              inputProps={{ min: 0 }}
             />
           </Box>
         </DialogContent>

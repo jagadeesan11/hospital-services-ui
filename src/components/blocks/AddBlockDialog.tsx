@@ -30,7 +30,6 @@ const AddBlockDialog: React.FC<AddBlockDialogProps> = ({
 }) => {
   const [formData, setFormData] = useState<Omit<Block, 'id'>>({
     name: '',
-    floorNumber: 0,
     hospital_id: 0
   });
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
@@ -57,10 +56,6 @@ const AddBlockDialog: React.FC<AddBlockDialogProps> = ({
 
     if (!formData.name.trim()) {
       newErrors.name = 'Block name is required';
-    }
-
-    if (!formData.floorNumber) {
-      newErrors.floorNumber = 'Floor number is required';
     }
 
     if (!formData.hospital_id) {
@@ -110,10 +105,10 @@ const AddBlockDialog: React.FC<AddBlockDialogProps> = ({
     setError('');
 
     try {
-      await blockService.createBlock(formData);
+      await blockService.createBlock(formData.hospital_id, formData);
       onSuccess();
       onClose();
-      setFormData({ name: '', floorNumber: 0, hospital_id: 0 });
+      setFormData({ name: '', hospital_id: 0 });
     } catch (err) {
       setError('Failed to create block. Please try again.');
       console.error('Error creating block:', err);
@@ -167,19 +162,6 @@ const AddBlockDialog: React.FC<AddBlockDialogProps> = ({
               error={!!errors.name}
               helperText={errors.name}
               fullWidth
-            />
-
-            <TextField
-              required
-              label="Floor Number"
-              name="floorNumber"
-              type="number"
-              value={formData.floorNumber}
-              onChange={handleTextChange}
-              error={!!errors.floorNumber}
-              helperText={errors.floorNumber}
-              fullWidth
-              inputProps={{ min: 0 }}
             />
           </Box>
         </DialogContent>

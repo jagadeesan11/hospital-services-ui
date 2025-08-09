@@ -29,7 +29,6 @@ const BlockList: React.FC = () => {
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [selectedHospital, setSelectedHospital] = useState<number | ''>('');
-  const [selectedFloor, setSelectedFloor] = useState<number | ''>('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
@@ -53,12 +52,12 @@ const BlockList: React.FC = () => {
     }
   }, [hospitals, selectedHospital]);
 
-  // Load blocks whenever selectedHospital or selectedFloor changes
+  // Load blocks whenever selectedHospital changes
   useEffect(() => {
     if (selectedHospital) {
       loadBlocks();
     }
-  }, [selectedHospital, selectedFloor]);
+  }, [selectedHospital]);
 
   const loadHospitals = async () => {
     try {
@@ -100,16 +99,7 @@ const BlockList: React.FC = () => {
   const handleHospitalChange = (event: SelectChangeEvent<number | ''>) => {
     const hospitalId = event.target.value;
     setSelectedHospital(hospitalId);
-    if (selectedFloor) {
-      setSelectedFloor(''); // Reset floor selection when hospital changes
-    }
     // loadBlocks() will be called automatically by useEffect when selectedHospital changes
-  };
-
-  const handleFloorChange = (e: SelectChangeEvent<number | ''>) => {
-    const floorNumber = e.target.value;
-    setSelectedFloor(floorNumber);
-    // loadBlocks() will be called automatically by useEffect when selectedFloor changes
   };
 
   const handleDelete = async (id: number) => {
@@ -150,9 +140,13 @@ const BlockList: React.FC = () => {
     setSuccessMessage('Block updated successfully');
   };
 
-  const getHospitalName = (hospital_id: number) => {
-    // Find the hospital in the array
-    const hospital = hospitals.find(h => h.id === hospital_id);
+  const getHospitalName = (block: Block) => {
+    // Use the nested hospital object if available, otherwise fall back to lookup
+    if (block.hospital && block.hospital.name) {
+      return block.hospital.name;
+    }
+    // Fallback to looking up in hospitals array if hospital object is not available
+    const hospital = hospitals.find(h => h.id === block.hospital_id);
     return hospital ? hospital.name : 'Unknown Hospital';
   };
 
@@ -176,24 +170,6 @@ const BlockList: React.FC = () => {
             ))}
           </Select>
         </FormControl>
-
-        <FormControl fullWidth>
-          <InputLabel>Filter by Floor</InputLabel>
-          <Select<number | ''>
-            value={selectedFloor}
-            label="Filter by Floor"
-            onChange={handleFloorChange}
-          >
-            <MenuItem value="">
-              <em>All Floors</em>
-            </MenuItem>
-            {[...Array(10)].map((_, index) => (
-              <MenuItem key={index} value={index}>
-                Floor {index}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
       </Box>
 
       <TableContainer component={Paper}>
@@ -209,7 +185,6 @@ const BlockList: React.FC = () => {
           <TableHead>
             <TableRow>
               <TableCell>Name</TableCell>
-              <TableCell>Floor Number</TableCell>
               <TableCell>Hospital</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
@@ -218,8 +193,7 @@ const BlockList: React.FC = () => {
             {blocks.map((block) => (
               <TableRow key={block.id}>
                 <TableCell>{block.name}</TableCell>
-                <TableCell>{block.floorNumber}</TableCell>
-                <TableCell>{getHospitalName(block.hospital_id)}</TableCell>
+                <TableCell>{getHospitalName(block)}</TableCell>
                 <TableCell>
                   <IconButton
                     color="primary"

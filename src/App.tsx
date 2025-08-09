@@ -21,7 +21,8 @@ import {
   Person as PersonIcon,
   Group as GroupIcon,
   Logout as LogoutIcon,
-  Dashboard as DashboardIcon
+  Dashboard as DashboardIcon,
+  Receipt as ReceiptIcon
 } from '@mui/icons-material';
 import Home from './components/home/Home';
 import Dashboard from './components/auth/Dashboard';
@@ -32,6 +33,8 @@ import DepartmentList from './components/departments/DepartmentList';
 import DoctorList from './components/doctors/DoctorList';
 import PatientList from './components/patients/PatientList';
 import AppointmentList from './components/appointments/AppointmentList';
+import BillingList from './components/billing/BillingList';
+import ServiceCatalogList from './components/serviceCatalog/ServiceCatalogList';
 import ApiDebugger from './components/debug/ApiDebugger';
 import NavigationDebugger from './components/debug/NavigationDebugger';
 import { authService, UserResponse } from './services/authService';
@@ -182,6 +185,14 @@ function App() {
                 >
                   Appointments
                 </Button>
+                <Button
+                  color="inherit"
+                  component={Link}
+                  to="/billing"
+                  startIcon={<ReceiptIcon />}
+                >
+                  Billing
+                </Button>
               </>
             )}
           </Box>
@@ -226,6 +237,12 @@ function App() {
                     <MedicalServicesIcon />
                   </ListItemIcon>
                   Departments
+                </MenuItem>,
+                <MenuItem key="service-catalog" onClick={handleCloseMenu} component={Link} to="/service-catalog">
+                  <ListItemIcon>
+                    <ViewModuleIcon />
+                  </ListItemIcon>
+                  Service Catalog
                 </MenuItem>,
                 <Divider key="divider" />,
                 <MenuItem key="doctors" onClick={handleCloseMenu} component={Link} to="/doctors">
@@ -314,6 +331,24 @@ function App() {
             element={
               <ProtectedRoute requiredRoles={['ADMIN', 'USER']} user={user}>
                 <AppointmentList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/billing"
+            element={
+              <ProtectedRoute requiredRoles={['ADMIN', 'USER']} user={user}>
+                <BillingList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/service-catalog"
+            element={
+              <ProtectedRoute requiredRoles={['ADMIN']} user={user}>
+                <ServiceCatalogList />
               </ProtectedRoute>
             }
           />

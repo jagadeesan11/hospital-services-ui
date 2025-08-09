@@ -13,7 +13,9 @@ const getEnvironmentConfig = () => {
         APPOINTMENT_SERVICE: process.env.REACT_APP_APPOINTMENT_SERVICE_URL || 'https://api.hospital.com/appointment',
         PATIENT_SERVICE: process.env.REACT_APP_PATIENT_SERVICE_URL || 'https://api.hospital.com/patient',
         DOCTOR_SERVICE: process.env.REACT_APP_DOCTOR_SERVICE_URL || 'https://api.hospital.com/doctor',
-        EMAIL_SERVICE: process.env.REACT_APP_EMAIL_SERVICE_URL || 'https://api.hospital.com/email'
+        EMAIL_SERVICE: process.env.REACT_APP_EMAIL_SERVICE_URL || 'https://api.hospital.com/email',
+        BILLING_SERVICE: process.env.REACT_APP_BILLING_SERVICE_URL || 'https://api.hospital.com/billing',
+        CATALOG_SERVICE: process.env.REACT_APP_CATALOG_SERVICE_URL || 'https://api.hospital.com/servicecatalog'
       };
     case 'staging':
       return {
@@ -22,7 +24,9 @@ const getEnvironmentConfig = () => {
         APPOINTMENT_SERVICE: process.env.REACT_APP_APPOINTMENT_SERVICE_URL || 'https://staging-api.hospital.com/appointment',
         PATIENT_SERVICE: process.env.REACT_APP_PATIENT_SERVICE_URL || 'https://staging-api.hospital.com/patient',
         DOCTOR_SERVICE: process.env.REACT_APP_DOCTOR_SERVICE_URL || 'https://staging-api.hospital.com/doctor',
-        EMAIL_SERVICE: process.env.REACT_APP_EMAIL_SERVICE_URL || 'https://staging-api.hospital.com/email'
+        EMAIL_SERVICE: process.env.REACT_APP_EMAIL_SERVICE_URL || 'https://staging-api.hospital.com/email',
+        BILLING_SERVICE: process.env.REACT_APP_BILLING_SERVICE_URL || 'https://staging-api.hospital.com/billing',
+        CATALOG_SERVICE: process.env.REACT_APP_CATALOG_SERVICE_URL || 'https://staging-api.hospital.com/servicecatalog'
       };
     case 'test':
       return {
@@ -31,7 +35,9 @@ const getEnvironmentConfig = () => {
         APPOINTMENT_SERVICE: process.env.REACT_APP_APPOINTMENT_SERVICE_URL || 'http://localhost:8083',
         PATIENT_SERVICE: process.env.REACT_APP_PATIENT_SERVICE_URL || 'http://localhost:8084',
         DOCTOR_SERVICE: process.env.REACT_APP_DOCTOR_SERVICE_URL || 'http://localhost:8085',
-        EMAIL_SERVICE: process.env.REACT_APP_EMAIL_SERVICE_URL || 'http://localhost:8086'
+        EMAIL_SERVICE: process.env.REACT_APP_EMAIL_SERVICE_URL || 'http://localhost:8086',
+        BILLING_SERVICE: process.env.REACT_APP_BILLING_SERVICE_URL || 'http://localhost:8080',
+        CATALOG_SERVICE: process.env.REACT_APP_CATALOG_SERVICE_URL || 'http://localhost:8080'
       };
     default: // development and any other environment
       return {
@@ -40,7 +46,9 @@ const getEnvironmentConfig = () => {
         APPOINTMENT_SERVICE: process.env.REACT_APP_APPOINTMENT_SERVICE_URL || 'http://localhost:8080',
         PATIENT_SERVICE: process.env.REACT_APP_PATIENT_SERVICE_URL || 'http://localhost:8080',
         DOCTOR_SERVICE: process.env.REACT_APP_DOCTOR_SERVICE_URL || 'http://localhost:8080',
-        EMAIL_SERVICE: process.env.REACT_APP_EMAIL_SERVICE_URL || 'http://localhost:8080'
+        EMAIL_SERVICE: process.env.REACT_APP_EMAIL_SERVICE_URL || 'http://localhost:8080',
+        BILLING_SERVICE: process.env.REACT_APP_BILLING_SERVICE_URL || 'http://localhost:8080',
+        CATALOG_SERVICE: process.env.REACT_APP_CATALOG_SERVICE_URL || 'http://localhost:8080'
       };
   }
 };
@@ -130,6 +138,8 @@ export const appointmentApi = createApiInstance(API_CONFIG.APPOINTMENT_SERVICE, 
 export const patientApi = createApiInstance(API_CONFIG.PATIENT_SERVICE, 'PATIENT');
 export const doctorApi = createApiInstance(API_CONFIG.DOCTOR_SERVICE, 'DOCTOR');
 export const emailApi = createApiInstance(API_CONFIG.EMAIL_SERVICE, 'EMAIL');
+export const serviceCatalogApi = createApiInstance(API_CONFIG.CATALOG_SERVICE, 'CATALOG');
+export const billingApi = createApiInstance(API_CONFIG.BILLING_SERVICE, 'BILLING');
 
 // Default API instance (backward compatibility)
 export const api = authApi;
@@ -176,6 +186,10 @@ export const getApiInstance = (serviceName: keyof typeof API_CONFIG) => {
       return doctorApi;
     case 'EMAIL_SERVICE':
       return emailApi;
+    case 'BILLING_SERVICE':
+        return billingApi;
+    case 'CATALOG_SERVICE':
+        return serviceCatalogApi;
     default:
       return authApi;
   }

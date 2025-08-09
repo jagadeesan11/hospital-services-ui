@@ -152,8 +152,13 @@ const DepartmentList: React.FC = () => {
     setSuccessMessage('Department updated successfully');
   };
 
-  const getBlockName = (block_id: number) => {
-    const block = blocks.find(b => b.id === block_id);
+  const getBlockName = (department: Department) => {
+    // Use the nested block object if available, otherwise fall back to lookup
+    if (department.block && department.block.name) {
+      return department.block.name;
+    }
+    // Fallback to looking up in blocks array if block object is not available
+    const block = blocks.find(b => b.id === department.block_id);
     return block ? block.name : 'Unknown Block';
   };
 
@@ -220,7 +225,7 @@ const DepartmentList: React.FC = () => {
             {departments.map((department) => (
               <TableRow key={department.id}>
                 <TableCell>{department.name}</TableCell>
-                <TableCell>{getBlockName(department.block_id)}</TableCell>
+                <TableCell>{getBlockName(department)}</TableCell>
                 <TableCell>
                   <IconButton
                     color="primary"
