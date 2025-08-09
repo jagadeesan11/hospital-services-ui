@@ -1,28 +1,28 @@
 import React, { useState } from 'react';
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions, Button,
-  Typography, Box, Divider, Table, TableBody, TableCell,
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  Button, Typography, Box, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Paper, Chip,
   FormControl, InputLabel, Select, MenuItem, CircularProgress,
-  SelectChangeEvent
+  Divider
 } from '@mui/material';
 import { Bill, BillStatus, billingService } from '../../services/billingService';
 
 interface BillDetailsDialogProps {
   open: boolean;
   onClose: () => void;
-  bill: Bill | null;
   onStatusChange: () => void;
+  bill: Bill | null;
 }
 
 const BillDetailsDialog: React.FC<BillDetailsDialogProps> = ({
   open,
   onClose,
-  bill,
-  onStatusChange
+  onStatusChange,
+  bill
 }) => {
-  const [status, setStatus] = useState<BillStatus | ''>('');
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [status, setStatus] = useState<BillStatus>(BillStatus.PENDING);
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
   React.useEffect(() => {
     if (bill) {
@@ -31,11 +31,11 @@ const BillDetailsDialog: React.FC<BillDetailsDialogProps> = ({
   }, [bill]);
 
   const handleStatusChange = async () => {
-    if (!bill || !status) return;
+    if (!bill?.id) return;
 
     setIsUpdating(true);
     try {
-      await billingService.updateBillStatus(bill.id!, status as BillStatus);
+      await billingService.updateBillStatus(bill.id, status);
       onStatusChange();
       onClose();
     } catch (error) {
@@ -45,201 +45,143 @@ const BillDetailsDialog: React.FC<BillDetailsDialogProps> = ({
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR'
-    }).format(amount);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-IN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
   const getStatusColor = (status: BillStatus) => {
     switch (status) {
       case BillStatus.PAID:
         return 'success';
-      case BillStatus.PARTIALLY_PAID:
+      case BillStatus.PENDING:
         return 'warning';
+      case BillStatus.PARTIALLY_PAID:
+        return 'info';
       case BillStatus.OVERDUE:
         return 'error';
       case BillStatus.CANCELLED:
-        return 'error';
+        return 'default';
       default:
-        return 'info';
+        return 'default';
     }
   };
 
-  if (!open || !bill) return null;
+  if (!bill) return null;
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="md"
-      fullWidth
-    >
-      <DialogTitle sx={{ pb: 1 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6">Bill Details</Typography>
-          <Chip
-            label={bill.status.replace(/_/g, ' ')}
-            color={getStatusColor(bill.status) as any}
-            size="small"
-          />
-        </Box>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle>
+        Bill Details - {bill.billNumber}
       </DialogTitle>
       <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 3 }}>
-          {/* Bill Info */}
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="subtitle2" color="text.secondary">Bill Number</Typography>
-            <Typography variant="body1" gutterBottom>{bill.billNumber}</Typography>
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Patient Information
+          </Typography>
+          <Typography><strong>Name:</strong> {bill.patient?.firstName} {bill.patient?.lastName}</Typography>
+          <Typography><strong>Email:</strong> {bill.patient?.email}</Typography>
+          <Typography><strong>Phone:</strong> {bill.patient?.phone}</Typography>
+        </Box>
 
-            <Typography variant="subtitle2" color="text.secondary">Patient</Typography>
-            <Typography variant="body1" gutterBottom>
-              {bill.patient
-                ? `${bill.patient.firstName} ${bill.patient.lastName}`
-                : bill.patientName || 'N/A'
-              }
-            </Typography>
-
-            <Typography variant="subtitle2" color="text.secondary">Hospital</Typography>
-            <Typography variant="body1" gutterBottom>
-              {bill.hospital?.name || bill.hospitalName || 'N/A'}
-            </Typography>
-          </Box>
-
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="subtitle2" color="text.secondary">Bill Date</Typography>
-            <Typography variant="body1" gutterBottom>{formatDate(bill.billDate)}</Typography>
-
-            <Typography variant="subtitle2" color="text.secondary">Due Date</Typography>
-            <Typography variant="body1" gutterBottom>{formatDate(bill.dueDate)}</Typography>
-
-            {bill.notes && (
-              <>
-                <Typography variant="subtitle2" color="text.secondary">Notes</Typography>
-                <Typography variant="body1" gutterBottom>{bill.notes}</Typography>
-              </>
-            )}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Bill Information
+          </Typography>
+          <Typography><strong>Bill Number:</strong> {bill.billNumber}</Typography>
+          <Typography><strong>Bill Date:</strong> {new Date(bill.billDate).toLocaleDateString()}</Typography>
+          <Typography><strong>Due Date:</strong> {new Date(bill.dueDate).toLocaleDateString()}</Typography>
+          <Typography><strong>Hospital:</strong> {bill.hospital?.name}</Typography>
+          <Box sx={{ mt: 1 }}>
+            <Chip
+              label={bill.status}
+              color={getStatusColor(bill.status) as any}
+              size="small"
+            />
           </Box>
         </Box>
 
-        <Divider sx={{ my: 2 }} />
-
-        {/* Bill Items */}
-        <Typography variant="h6" gutterBottom>Bill Items</Typography>
-        <TableContainer component={Paper} variant="outlined">
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>Service</TableCell>
-                <TableCell align="right">Quantity</TableCell>
-                <TableCell align="right">Unit Price</TableCell>
-                <TableCell align="right">Total</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {bill.billItems.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>{item.serviceName}</TableCell>
-                  <TableCell align="right">{item.quantity}</TableCell>
-                  <TableCell align="right">{formatCurrency(item.unitPrice)}</TableCell>
-                  <TableCell align="right">{formatCurrency(item.totalAmount)}</TableCell>
-                </TableRow>
-              ))}
-              <TableRow>
-                <TableCell colSpan={2} />
-                <TableCell align="right"><strong>Subtotal</strong></TableCell>
-                <TableCell align="right">{formatCurrency(bill.subTotal)}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell colSpan={2} />
-                <TableCell align="right"><strong>Tax</strong></TableCell>
-                <TableCell align="right">{formatCurrency(bill.taxAmount)}</TableCell>
-              </TableRow>
-              {bill.discountAmount && Number(bill.discountAmount) > 0 && (
-                  <TableCell align="right">{formatCurrency(Number(bill.discountAmount))}</TableCell>
-                  <TableCell colSpan={2} />
-                  <TableCell align="right"><strong>Discount</strong></TableCell>
-                  <TableCell align="right">{formatCurrency(bill.discountAmount)}</TableCell>
-                </TableRow>
-              )}
-              <TableRow>
-                <TableCell colSpan={2} />
-                <TableCell align="right"><strong>Total Amount</strong></TableCell>
-                <TableCell align="right"><strong>{formatCurrency(bill.totalAmount)}</strong></TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </TableContainer>
-
-        <Divider sx={{ my: 2 }} />
-
-        {/* Payments */}
-        <Typography variant="h6" gutterBottom>Payments</Typography>
-        {bill.payments && bill.payments.length > 0 ? (
-          <TableContainer component={Paper} variant="outlined">
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Bill Items
+          </Typography>
+          <TableContainer component={Paper}>
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Method</TableCell>
-                  <TableCell>Reference</TableCell>
-                  <TableCell align="right">Amount</TableCell>
+                  <TableCell>Service</TableCell>
+                  <TableCell>Description</TableCell>
+                  <TableCell align="right">Quantity</TableCell>
+                  <TableCell align="right">Unit Price</TableCell>
+                  <TableCell align="right">Tax</TableCell>
+                  <TableCell align="right">Total</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {bill.payments.map((payment, index) => (
-                  <TableRow key={payment.id || index}>
-                    <TableCell>{formatDate(payment.paymentDate)}</TableCell>
-                    <TableCell>{payment.paymentMethod.replace(/_/g, ' ')}</TableCell>
-                    <TableCell>{payment.reference || '-'}</TableCell>
-                    <TableCell align="right">{formatCurrency(payment.amount)}</TableCell>
+                {bill.billItems.map((item, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{item.serviceName}</TableCell>
+                    <TableCell>{item.description || '-'}</TableCell>
+                    <TableCell align="right">{item.quantity}</TableCell>
+                    <TableCell align="right">₹{item.unitPrice.toFixed(2)}</TableCell>
+                    <TableCell align="right">₹{item.taxAmount.toFixed(2)}</TableCell>
+                    <TableCell align="right">₹{item.totalAmount.toFixed(2)}</TableCell>
                   </TableRow>
                 ))}
-                <TableRow>
-                  <TableCell colSpan={3} align="right"><strong>Total Paid</strong></TableCell>
-                  <TableCell align="right">{formatCurrency(bill.paidAmount)}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell colSpan={3} align="right"><strong>Balance Due</strong></TableCell>
-                  <TableCell align="right"><strong>{formatCurrency(bill.balanceAmount)}</strong></TableCell>
-                </TableRow>
               </TableBody>
             </Table>
           </TableContainer>
-        ) : (
-          <Typography variant="body2" color="text.secondary">No payments recorded</Typography>
-        )}
+        </Box>
 
-        <Divider sx={{ my: 2 }} />
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Payment Summary
+          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <Typography>Subtotal:</Typography>
+            <Typography>₹{bill.subTotal.toFixed(2)}</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <Typography>Tax:</Typography>
+            <Typography>₹{bill.taxAmount.toFixed(2)}</Typography>
+          </Box>
+          {bill.discountAmount && bill.discountAmount > 0 && (
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+              <Typography>Discount:</Typography>
+              <Typography>-₹{bill.discountAmount.toFixed(2)}</Typography>
+            </Box>
+          )}
+          <Divider sx={{ my: 1 }} />
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <Typography variant="h6">Total Amount:</Typography>
+            <Typography variant="h6">₹{bill.totalAmount.toFixed(2)}</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <Typography>Paid Amount:</Typography>
+            <Typography>₹{bill.paidAmount.toFixed(2)}</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+            <Typography variant="h6" color={bill.balanceAmount > 0 ? 'error' : 'success'}>
+              Balance Due:
+            </Typography>
+            <Typography variant="h6" color={bill.balanceAmount > 0 ? 'error' : 'success'}>
+              ₹{bill.balanceAmount.toFixed(2)}
+            </Typography>
+          </Box>
+        </Box>
 
-        {/* Update Status */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <FormControl size="small" sx={{ minWidth: '200px' }}>
+        <Box sx={{ mb: 2 }}>
+          <FormControl fullWidth>
             <InputLabel>Update Status</InputLabel>
             <Select
               value={status}
+              onChange={(e) => setStatus(e.target.value as BillStatus)}
               label="Update Status"
-              onChange={(e: SelectChangeEvent<string>) => setStatus(e.target.value as BillStatus)}
             >
-              {Object.values(BillStatus).map((status) => (
-                <MenuItem key={status} value={status}>
-                  {status.replace(/_/g, ' ')}
+              {Object.values(BillStatus).map((statusOption) => (
+                <MenuItem key={statusOption} value={statusOption}>
+                  {statusOption}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
           <Button
+            sx={{ mt: 2 }}
             variant="contained"
             color="primary"
             onClick={handleStatusChange}
