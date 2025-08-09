@@ -177,8 +177,12 @@ const AddDepartmentDialog: React.FC<AddDepartmentDialogProps> = ({
       onSuccess();
       onClose();
       setFormData({ name: '', block_id: 0, hospital_id: 0 });
-    } catch (err) {
-      setError('Failed to create department. Please try again.');
+    } catch (err: any) {
+      // Extract error message from backend response
+      const errorMessage = err?.response?.data?.message ||
+                          err?.message ||
+                          'Failed to create department';
+      setError(errorMessage);
       console.error('Error creating department:', err);
     } finally {
       setIsSubmitting(false);
@@ -347,10 +351,20 @@ const AddDepartmentDialog: React.FC<AddDepartmentDialogProps> = ({
             return { ...dept, status: 'success' as const };
           } else {
             errorCount++;
+            // Extract specific error message from rejected promise
+            let specificError = 'Department name already exists in the hospital';
+
+            if (result && result.status === 'rejected') {
+              const errorReason = result.reason;
+              specificError = errorReason?.response?.data?.message ||
+                             errorReason?.message ||
+                             'Department name already exists in the hospital';
+            }
+
             return {
               ...dept,
               status: 'error' as const,
-              error: result?.status === 'rejected' ? 'Failed to create department' : 'Unknown error'
+              error: specificError
             };
           }
         }
